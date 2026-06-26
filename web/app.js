@@ -1,78 +1,74 @@
-let resultData = [];
-let codeMap = {};
-let counterMap = {};
+let data1 = [];
+let ruleMap = {};
+let result = [];
 
-function generateCode(parent) {
-    if (!counterMap[parent]) counterMap[parent] = 1;
-    else counterMap[parent]++;
+document.getElementById("file1").addEventListener("change", readFile1);
+document.getElementById("file2").addEventListener("change", readFile2);
 
-    return parent + String(counterMap[parent]).padStart(2, '0');
-}
-
-// 读取Excel
-document.getElementById("file").addEventListener("change", handleFile);
-
-document.getElementById("drop").addEventListener("click", () => {
-    document.getElementById("file").click();
-});
-
-function handleFile(e) {
+function readFile1(e){
     let file = e.target.files[0];
     let reader = new FileReader();
 
-    reader.onload = function (e) {
-        let data = new Uint8Array(e.target.result);
-        let workbook = XLSX.read(data, { type: "array" });
-
-        let sheet = workbook.Sheets[workbook.SheetNames[0]];
-        let json = XLSX.utils.sheet_to_json(sheet);
-
-        processData(json);
+    reader.onload = function(evt){
+        let wb = XLSX.read(evt.target.result, {type:"binary"});
+        let sheet = wb.Sheets[wb.SheetNames[0]];
+        data1 = XLSX.utils.sheet_to_json(sheet);
     };
 
-    reader.readAsArrayBuffer(file);
+    reader.readAsBinaryString(file);
 }
 
-function processData(data) {
+function readFile2(e){
+    let file = e.target.files[0];
+    let reader = new FileReader();
 
-    resultData = [];
+    reader.onload = function(evt){
+        let wb = XLSX.read(evt.target.result, {type:"binary"});
 
-    data.forEach((row, index) => {
+        // 关键：读取规则sheet（你文件里的“上级目录编码”）
+        let sheet = wb.Sheets[wb.SheetNames[0]];
+        let data = XLSX.utils.sheet_to_json(sheet);
 
-        let level1 = row["一级分类"];
-        let level2 = row["二级分类"];
+        ruleMap = {};
+        data.forEach(r => {
+            ruleMap[r["名称"]] = r["编码"];
+        });
+
+    };
+
+    reader.readAsBinaryString(file);
+}
+
+// 核心生成逻辑
+function generate(){
+
+    result = [];
+
+    data1.forEach(row => {
+
+        let l1 = row["课程目录"];
+        let l2 = row["二级目录"];
         let course = row["课程名称"];
 
-        if (!codeMap[level1]) {
-            codeMap[level1] = "TY" + String(Object.keys(codeMap).length + 1).padStart(2, '0');
-        }
+        let key1 = l1;
+        let key2 = l1 + "->" + l2;
 
-        let l1 = codeMap[level1];
+        let code = ruleMap[key2] || ruleMap[key1] || "未匹配";
 
-        let key2 = level1 + "-" + level2;
-        if (!codeMap[key2]) {
-            codeMap[key2] = generateCode(l1);
-        }
-
-        let l2 = codeMap[key2];
-
-        let courseCode = generateCode(l2);
-
-        resultData.push({
+        result.push({
             "课程名称": course,
-            "上级目录编码": l2,
-            "课程目录编码": courseCode
+            "上级目录编码": code
         });
     });
 
-    alert("生成完成！点击下载");
+    download();
 }
 
 // 下载Excel
-function downloadResult() {
-    let ws = XLSX.utils.json_to_sheet(resultData);
+function download(){
+    let ws = XLSX.utils.json_to_sheet(result);
     let wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "课程目录-2");
+    XLSX.utils.book_append_sheet(wb, ws, "结果");
 
     XLSX.writeFile(wb, "课程目录-2-输出.xlsx");
 }
