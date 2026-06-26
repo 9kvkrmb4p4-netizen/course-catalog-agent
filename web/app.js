@@ -1,3 +1,8 @@
+console.log("🔥 app.js 已加载成功");
+
+/* =========================
+   全局数据
+========================= */
 let file1Data = [];
 let ruleMap = {};
 
@@ -25,6 +30,7 @@ function readExcel(file) {
         resolve(json);
 
       } catch (err) {
+        console.error("Excel解析失败", err);
         reject(err);
       }
     };
@@ -39,28 +45,28 @@ function readExcel(file) {
 ========================= */
 document.getElementById("file1").addEventListener("change", async (e) => {
   file1Data = await readExcel(e.target.files[0]);
-  console.log("课程目录-1 ✔", file1Data);
+  console.log("✔ 课程目录-1读取成功", file1Data);
 });
 
 /* =========================
-   file2（关键修复）
+   file2（规则表：强稳定解析）
 ========================= */
 document.getElementById("file2").addEventListener("change", async (e) => {
 
   const file = e.target.files[0];
-
   const buffer = await file.arrayBuffer();
+
   const workbook = XLSX.read(buffer, { type: "array" });
 
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
+  // 强制二维数组（避免 Object 问题）
   const arr = XLSX.utils.sheet_to_json(sheet, {
     header: 1,
     defval: ""
   });
 
-  console.log("规则表二维数组 ✔", arr);
+  console.log("✔ 课程目录-2解析二维数组", arr);
 
   ruleMap = {};
 
@@ -75,13 +81,15 @@ document.getElementById("file2").addEventListener("change", async (e) => {
     }
   }
 
-  console.log("规则Map ✔", ruleMap);
+  console.log("✔ ruleMap生成成功", ruleMap);
 });
 
 /* =========================
-   生成逻辑
+   生成按钮（关键：必须挂 window）
 ========================= */
-function generate() {
+window.generate = function () {
+
+  console.log("🚀 开始生成");
 
   if (!file1Data.length) {
     alert("请先上传课程目录-1");
@@ -95,7 +103,9 @@ function generate() {
 
   const result = file1Data.map(row => {
 
-    const name = row["课程名称"] || row["课程名称 "] || Object.values(row)[0];
+    const name =
+      row["课程名称"] ||
+      Object.values(row)[0];
 
     const code = ruleMap[name] || "未匹配";
 
@@ -106,7 +116,7 @@ function generate() {
     };
   });
 
-  console.log("最终结果 ✔", result);
+  console.log("✔ 最终结果", result);
 
   const ws = XLSX.utils.json_to_sheet(result);
   const wb = XLSX.utils.book_new();
@@ -115,4 +125,4 @@ function generate() {
   XLSX.writeFile(wb, "课程目录生成结果.xlsx");
 
   document.getElementById("msg").innerText = "生成完成 ✔";
-}
+};
