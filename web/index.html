@@ -1,41 +1,44 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<title>课程目录编码生成系统</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
-<style>
-body{font-family:Arial;background:#f5f6fa;margin:0}
-header{background:#2d6cdf;color:white;padding:20px;text-align:center}
-.container{max-width:900px;margin:auto;padding:20px}
-.box{background:#fff;padding:20px;margin-bottom:15px;border-radius:10px}
-button{padding:10px 20px;background:#2d6cdf;color:#fff;border:none;cursor:pointer}
-</style>
+    <meta charset="UTF-8">
+    <title>课程目录生成系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
-<body>
+<body style="font-family: Arial; padding: 30px;">
 
-<header>📚 Excel课程目录编码生成系统</header>
+<h2>📘 课程目录自动生成系统</h2>
 
-<div class="container">
-
-<div class="box">
-<h3>① 上传课程目录-1</h3>
-<input type="file" id="file1">
+<!-- 文件1 -->
+<div>
+    <h3>① 上传课程目录-1</h3>
+    <input type="file" id="file1">
 </div>
 
-<div class="box">
-<h3>② 上传课程目录-2（规则）</h3>
-<input type="file" id="file2">
+<br>
+
+<!-- 文件2 -->
+<div>
+    <h3>② 上传课程目录-2（规则表）</h3>
+    <input type="file" id="file2">
 </div>
 
-<div class="box">
-<button onclick="generate()">生成课程目录</button>
+<br>
+
+<!-- 生成按钮 -->
+<div>
+    <button onclick="generate()" style="padding:10px 20px;font-size:16px;">
+        🚀 生成课程目录编码
+    </button>
 </div>
 
-</div>
+<br>
 
+<!-- 输出提示 -->
+<div id="status"></div>
+
+<!-- 引入你的JS -->
 <script src="app.js"></script>
 
 </body>
