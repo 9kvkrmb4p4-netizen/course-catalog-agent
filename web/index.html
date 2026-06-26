@@ -2,137 +2,33 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>课程目录生成系统</title>
+  <title>课程目录自动生成系统</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
-    body {
-      font-family: Arial;
-      background: #f5f6fa;
-      margin: 0;
-    }
-
-    header {
-      background: #2d6cdf;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 22px;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    input {
-      width: 70%;
-      padding: 12px;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 12px 20px;
-      font-size: 16px;
-      background: #2d6cdf;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-
-    .card {
-      background: white;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    .title {
-      font-weight: bold;
-    }
-
-    .step {
-      margin-left: 10px;
-      color: #555;
-    }
+    body { font-family: Arial; background:#f5f6fa; margin:0; }
+    header { background:#2d6cdf; color:#fff; padding:20px; text-align:center; }
+    .box { max-width:800px; margin:40px auto; background:#fff; padding:20px; border-radius:10px; }
+    .upload { border:2px dashed #ccc; padding:40px; text-align:center; cursor:pointer; }
+    button { margin-top:20px; padding:10px 20px; background:#2d6cdf; color:#fff; border:none; cursor:pointer; }
   </style>
 </head>
 
 <body>
 
-<header>
-  📚 课程目录生成系统
-</header>
+<header>📚 Excel课程目录自动生成系统</header>
 
-<div class="container">
+<div class="box">
 
-  <input id="topic" placeholder="输入课程主题，比如 Python / AI / 前端">
-  <button onclick="generate()">生成课程</button>
+  <div class="upload" id="drop">
+    拖拽 Excel 文件到这里 或 点击选择
+    <input type="file" id="file" hidden />
+  </div>
 
-  <div id="result"></div>
+  <button onclick="downloadResult()">下载生成结果</button>
 
 </div>
 
-<script>
-function generate() {
-  let topic = document.getElementById("topic").value;
-  let result = document.getElementById("result");
-
-  if (!topic) {
-    alert("请输入课程主题");
-    return;
-  }
-
-  let data = createCourse(topic);
-
-  let html = `<h3>📘 ${topic} 课程结构</h3>`;
-
-  data.forEach((item, index) => {
-    html += `
-      <div class="card">
-        <div class="title">第 ${index + 1} 章：${item.title}</div>
-        <div class="step">${item.desc}</div>
-      </div>
-    `;
-  });
-
-  result.innerHTML = html;
-}
-
-function createCourse(topic) {
-
-  if (topic.includes("Python")) {
-    return [
-      {title: "Python基础语法", desc: "变量、数据类型、循环"},
-      {title: "函数与模块", desc: "函数定义与使用"},
-      {title: "实战项目", desc: "小型项目练习"}
-    ];
-  }
-
-  if (topic.includes("AI")) {
-    return [
-      {title: "AI基础概念", desc: "什么是人工智能"},
-      {title: "机器学习", desc: "监督与非监督学习"},
-      {title: "简单模型实践", desc: "入门模型训练"}
-    ];
-  }
-
-  if (topic.includes("前端")) {
-    return [
-      {title: "HTML基础", desc: "网页结构"},
-      {title: "CSS样式", desc: "页面美化"},
-      {title: "JavaScript交互", desc: "动态网页"}
-    ];
-  }
-
-  return [
-    {title: topic + "基础", desc: "入门内容"},
-    {title: topic + "进阶", desc: "提升能力"},
-    {title: topic + "实战", desc: "项目练习"}
-  ];
-}
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
