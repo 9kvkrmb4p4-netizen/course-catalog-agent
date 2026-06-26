@@ -1,8 +1,7 @@
-console.log("🔥 课程目录系统已加载");
+console.log("🔥 JS已加载成功");
 
 let file1 = [];
 let file2 = [];
-let file3 = [];
 let treeMap = {};
 let result = [];
 
@@ -11,6 +10,7 @@ let result = [];
 ========================= */
 function readExcel(file) {
   return new Promise((resolve) => {
+
     const reader = new FileReader();
 
     reader.onload = (e) => {
@@ -26,127 +26,95 @@ function readExcel(file) {
 }
 
 /* =========================
-   file1
+   初始化（关键）
 ========================= */
-document.getElementById("file1").addEventListener("change", async (e) => {
-  file1 = await readExcel(e.target.files[0]);
-  console.log("✔ file1", file1);
-});
+window.onload = function () {
 
-/* =========================
-   file2（构建树结构 + 上级编码）
-========================= */
-document.getElementById("file2").addEventListener("change", async (e) => {
+  console.log("✔ 页面加载完成");
 
-  file2 = await readExcel(e.target.files[0]);
+  const file1Input = document.getElementById("file1");
+  const file2Input = document.getElementById("file2");
+  const btn = document.getElementById("runBtn");
 
-  treeMap = {};
-
-  file2.forEach(row => {
-
-    const name = row["目录名称(必填)"] || row["目录名称"] || "";
-    const code = row["目录编码(必填)"] || row["目录编码"] || "";
-    const parent = row["上级目录编码"] || "";
-
-    if (!treeMap[parent]) treeMap[parent] = [];
-
-    treeMap[parent].push({
-      name,
-      code
-    });
-  });
-
-  console.log("✔ treeMap", treeMap);
-});
-
-/* =========================
-   file3（可选模板）
-========================= */
-document.getElementById("file3").addEventListener("change", async (e) => {
-  file3 = await readExcel(e.target.files[0]);
-  console.log("✔ file3", file3);
-});
-
-/* =========================
-   生成按钮
-========================= */
-document.getElementById("runBtn").addEventListener("click", generate);
-
-/* =========================
-   核心生成逻辑（目录树编码）
-========================= */
-function generate() {
-
-  if (!file1.length || !file2.length) {
-    alert("请上传 file1 和 file2");
+  if (!file1Input || !file2Input || !btn) {
+    console.error("❌ HTML元素缺失（检查id）");
     return;
   }
 
-  result = [];
+  /* file1 */
+  file1Input.addEventListener("change", async (e) => {
+    file1 = await readExcel(e.target.files[0]);
+    console.log("✔ file1", file1);
+  });
 
-  file1.forEach((row, index) => {
+  /* file2 */
+  file2Input.addEventListener("change", async (e) => {
 
-    const course = row["课程名称"] || Object.values(row)[0];
-    const l1 = row["一级分类"];
-    const l2 = row["二级分类"];
+    file2 = await readExcel(e.target.files[0]);
 
-    const parentCode = findParentCode(l1, l2);
+    treeMap = {};
 
-    const newCode = generateNextCode(parentCode, index);
+    file2.forEach(r => {
+      const name = Object.values(r)[0];
+      const code = Object.values(r)[1];
+      const parent = Object.values(r)[2] || "";
 
-    result.push({
-      "目录名称(必填)": course,
-      "目录编码(必填)": newCode,
-      "上级目录编码": parentCode
+      if (!treeMap[parent]) treeMap[parent] = [];
+
+      treeMap[parent].push({ name, code });
     });
+
+    console.log("✔ treeMap", treeMap);
+  });
+
+  /* 绑定按钮（关键修复点） */
+  btn.addEventListener("click", generate);
+};
+
+/* =========================
+   生成逻辑
+========================= */
+function generate() {
+
+  console.log("🚀 点击成功触发 generate");
+
+  if (!file1.length || !file2.length) {
+    alert("请先上传两个Excel文件");
+    return;
+  }
+
+  result = file1.map((row, i) => {
+
+    const course = Object.values(row)[0];
+    const l1 = Object.values(row)[1];
+    const l2 = Object.values(row)[2];
+
+    let parentCode = "未匹配";
+
+    for (let key in treeMap) {
+      for (let n of treeMap[key]) {
+        if (n.name === l1 || n.name === l2) {
+          parentCode = n.code;
+        }
+      }
+    }
+
+    const code = parentCode !== "未匹配"
+      ? parentCode + String(i + 1).padStart(2, "0")
+      : "未匹配";
+
+    return {
+      "目录名称(必填)": course,
+      "目录编码(必填)": code,
+      "上级目录编码": parentCode
+    };
   });
 
   console.log("🎯 result", result);
 
-  exportExcel(result);
-}
-
-/* =========================
-   找上级编码（按file2树）
-========================= */
-function findParentCode(l1, l2) {
-
-  for (let key in treeMap) {
-    const nodes = treeMap[key];
-
-    for (let n of nodes) {
-      if (n.name === l1 || n.name === l2) {
-        return n.code;
-      }
-    }
-  }
-
-  return "未匹配";
-}
-
-/* =========================
-   生成连续编码
-========================= */
-function generateNextCode(parentCode, index) {
-
-  if (!parentCode || parentCode === "未匹配") return "未匹配";
-
-  const num = String(index + 1).padStart(2, "0");
-
-  return parentCode + num;
-}
-
-/* =========================
-   导出Excel
-========================= */
-function exportExcel(data) {
-
-  const ws = XLSX.utils.json_to_sheet(data);
+  const ws = XLSX.utils.json_to_sheet(result);
   const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "课程目录3");
 
-  XLSX.utils.book_append_sheet(wb, ws, "课程目录-3");
-
-  XLSX.writeFile(wb, "课程目录-3_结果.xlsx");
-
-  document.getElementById("msg").innerText = "生成完成 ✔";
+  XLSX.writeFile(wb, "课程目录3.xlsx");
 }
