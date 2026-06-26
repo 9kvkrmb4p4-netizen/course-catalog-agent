@@ -1,6 +1,6 @@
 let data1 = [];
 let data2 = [];
-let ruleMap = [];
+let ruleMap = {};
 let result = [];
 
 /* =========================
@@ -18,35 +18,40 @@ document.getElementById("file2").addEventListener("change", function (e) {
 });
 
 /* =========================
-   读取Excel
+   Excel读取（已修复Netlify兼容问题）
 ========================= */
 function readExcel(e, type) {
+
     let file = e.target.files[0];
     let reader = new FileReader();
 
     reader.onload = function (evt) {
-        let wb = XLSX.read(evt.target.result, { type: "binary" });
+
+        let data = new Uint8Array(evt.target.result);
+
+        let wb = XLSX.read(data, { type: "array" });
+
         let sheet = wb.Sheets[wb.SheetNames[0]];
-        let data = XLSX.utils.sheet_to_json(sheet);
+
+        let json = XLSX.utils.sheet_to_json(sheet);
 
         if (type === 1) {
-            data1 = data;
+            data1 = json;
             console.log("✅ 课程目录-1读取成功", data1);
         }
 
         if (type === 2) {
-            data2 = data;
+            data2 = json;
             ruleMap = buildRuleMap(data2);
             console.log("✅ 课程目录-2读取成功", ruleMap);
         }
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
 }
 
 /* =========================
-   构建规则Map（核心修复版）
-   完全按字段名匹配（不会错）
+   构建规则Map（完全字段兼容）
 ========================= */
 function buildRuleMap(data) {
 
@@ -58,12 +63,14 @@ function buildRuleMap(data) {
             row["目录名称(必填)"] ||
             row["目录名称"] ||
             row["名称"] ||
-            row["课程名称"];
+            row["课程名称"] ||
+            Object.values(row)[0];
 
         let code =
             row["目录编码(必填)"] ||
             row["目录编码"] ||
-            row["编码"];
+            row["编码"] ||
+            Object.values(row)[1];
 
         if (name && code) {
             map[String(name).trim()] = String(code).trim();
@@ -74,7 +81,7 @@ function buildRuleMap(data) {
 }
 
 /* =========================
-   生成逻辑（核心）
+   生成逻辑
 ========================= */
 function generate() {
 
@@ -84,7 +91,7 @@ function generate() {
     }
 
     if (!data2.length) {
-        alert("❌ 请先上传课程目录-2（规则表）");
+        alert("❌ 课程目录-2未成功读取，请重新上传");
         return;
     }
 
@@ -108,7 +115,6 @@ function generate() {
             row["二级目录"] ||
             Object.values(row)[2];
 
-        // 精确匹配 + 兜底匹配
         let code =
             ruleMap[l1] ||
             ruleMap[l1 + "->" + l2] ||
@@ -121,7 +127,7 @@ function generate() {
         });
     });
 
-    console.log("🎯 最终结果", result);
+    console.log("🎯 生成结果", result);
 
     download();
 }
@@ -134,7 +140,7 @@ function download() {
     let ws = XLSX.utils.json_to_sheet(result);
     let wb = XLSX.utils.book_new();
 
-    XLSX.utils.book_append_sheet(wb, ws, "课程目录");
+    XLSX.utils.book_append_sheet(wb, ws, "课程目录输出");
 
     XLSX.writeFile(wb, "课程目录-输出.xlsx");
 }
