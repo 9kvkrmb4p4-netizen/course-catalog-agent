@@ -2,9 +2,8 @@
 <html lang="zh">
 
 <head>
-  <meta charset="UTF-8" />
-  <title>课程目录自动生成系统</title>
-
+  <meta charset="UTF-8">
+  <title>课程目录树生成系统</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -16,19 +15,24 @@
 
 <body>
 
-<h1>📘 课程目录自动生成系统</h1>
+<h1>📘 Excel → 课程目录树生成系统</h1>
 
 <div class="box">
-  <h3>① 上传课程目录-1</h3>
-  <input type="file" id="file1" accept=".xlsx">
+  <h3>① 课程目录-1（课程）</h3>
+  <input type="file" id="file1">
 </div>
 
 <div class="box">
-  <h3>② 上传课程目录-2（规则表）</h3>
-  <input type="file" id="file2" accept=".xlsx">
+  <h3>② 课程目录-2（规则+上级编码）</h3>
+  <input type="file" id="file2">
 </div>
 
-<button id="genBtn">🚀 生成课程目录编码</button>
+<div class="box">
+  <h3>③ 课程目录-3（模板结构，可选）</h3>
+  <input type="file" id="file3">
+</div>
+
+<button id="runBtn">🚀 生成课程目录树</button>
 
 <p id="msg"></p>
 
