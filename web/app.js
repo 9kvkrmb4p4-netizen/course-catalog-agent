@@ -1,36 +1,26 @@
-console.log("🔥 app.js 已加载成功");
+console.log("🔥 课程目录系统已加载");
 
-let file1Data = [];
-let ruleMap = {};
+let file1 = [];
+let file2 = [];
+let file3 = [];
+let treeMap = {};
+let result = [];
 
 /* =========================
-   Excel读取（稳定版）
+   Excel读取
 ========================= */
 function readExcel(file) {
-  return new Promise((resolve, reject) => {
-
+  return new Promise((resolve) => {
     const reader = new FileReader();
 
-    reader.onload = function (e) {
-      try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-
-        const json = XLSX.utils.sheet_to_json(sheet, {
-          defval: ""
-        });
-
-        resolve(json);
-
-      } catch (err) {
-        reject(err);
-      }
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: "array" });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      resolve(json);
     };
 
-    reader.onerror = reject;
     reader.readAsArrayBuffer(file);
   });
 }
@@ -39,86 +29,124 @@ function readExcel(file) {
    file1
 ========================= */
 document.getElementById("file1").addEventListener("change", async (e) => {
-  file1Data = await readExcel(e.target.files[0]);
-  console.log("✔ file1读取成功", file1Data);
+  file1 = await readExcel(e.target.files[0]);
+  console.log("✔ file1", file1);
 });
 
 /* =========================
-   file2（规则表）
+   file2（构建树结构 + 上级编码）
 ========================= */
 document.getElementById("file2").addEventListener("change", async (e) => {
 
-  const file = e.target.files[0];
-  const buffer = await file.arrayBuffer();
+  file2 = await readExcel(e.target.files[0]);
 
-  const wb = XLSX.read(buffer, { type: "array" });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
+  treeMap = {};
 
-  const arr = XLSX.utils.sheet_to_json(sheet, {
-    header: 1,
-    defval: ""
+  file2.forEach(row => {
+
+    const name = row["目录名称(必填)"] || row["目录名称"] || "";
+    const code = row["目录编码(必填)"] || row["目录编码"] || "";
+    const parent = row["上级目录编码"] || "";
+
+    if (!treeMap[parent]) treeMap[parent] = [];
+
+    treeMap[parent].push({
+      name,
+      code
+    });
   });
 
-  console.log("✔ file2二维数据", arr);
-
-  ruleMap = {};
-
-  for (let i = 1; i < arr.length; i++) {
-    const row = arr[i];
-
-    const name = (row[0] || "").trim();
-    const code = (row[1] || "").trim();
-
-    if (name && code) {
-      ruleMap[name] = code;
-    }
-  }
-
-  console.log("✔ ruleMap完成", ruleMap);
+  console.log("✔ treeMap", treeMap);
 });
 
 /* =========================
-   绑定按钮（关键：不会失效）
+   file3（可选模板）
 ========================= */
-document.getElementById("genBtn").addEventListener("click", generate);
+document.getElementById("file3").addEventListener("change", async (e) => {
+  file3 = await readExcel(e.target.files[0]);
+  console.log("✔ file3", file3);
+});
 
 /* =========================
-   生成逻辑
+   生成按钮
+========================= */
+document.getElementById("runBtn").addEventListener("click", generate);
+
+/* =========================
+   核心生成逻辑（目录树编码）
 ========================= */
 function generate() {
 
-  console.log("🚀 点击生成");
-
-  if (!file1Data.length) {
-    alert("请先上传课程目录-1");
+  if (!file1.length || !file2.length) {
+    alert("请上传 file1 和 file2");
     return;
   }
 
-  if (Object.keys(ruleMap).length === 0) {
-    alert("请先上传课程目录-2");
-    return;
-  }
+  result = [];
 
-  const result = file1Data.map(row => {
+  file1.forEach((row, index) => {
 
-    const name = row["课程名称"] || Object.values(row)[0];
+    const course = row["课程名称"] || Object.values(row)[0];
+    const l1 = row["一级分类"];
+    const l2 = row["二级分类"];
 
-    const code = ruleMap[name] || "未匹配";
+    const parentCode = findParentCode(l1, l2);
 
-    return {
-      "目录名称(必填)": name,
-      "目录编码(必填)": code,
-      "上级目录编码": code !== "未匹配" ? code.slice(0, -2) : "未匹配"
-    };
+    const newCode = generateNextCode(parentCode, index);
+
+    result.push({
+      "目录名称(必填)": course,
+      "目录编码(必填)": newCode,
+      "上级目录编码": parentCode
+    });
   });
 
-  console.log("✔ 最终结果", result);
+  console.log("🎯 result", result);
 
-  const ws = XLSX.utils.json_to_sheet(result);
+  exportExcel(result);
+}
+
+/* =========================
+   找上级编码（按file2树）
+========================= */
+function findParentCode(l1, l2) {
+
+  for (let key in treeMap) {
+    const nodes = treeMap[key];
+
+    for (let n of nodes) {
+      if (n.name === l1 || n.name === l2) {
+        return n.code;
+      }
+    }
+  }
+
+  return "未匹配";
+}
+
+/* =========================
+   生成连续编码
+========================= */
+function generateNextCode(parentCode, index) {
+
+  if (!parentCode || parentCode === "未匹配") return "未匹配";
+
+  const num = String(index + 1).padStart(2, "0");
+
+  return parentCode + num;
+}
+
+/* =========================
+   导出Excel
+========================= */
+function exportExcel(data) {
+
+  const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "结果");
 
-  XLSX.writeFile(wb, "课程目录输出.xlsx");
+  XLSX.utils.book_append_sheet(wb, ws, "课程目录-3");
+
+  XLSX.writeFile(wb, "课程目录-3_结果.xlsx");
 
   document.getElementById("msg").innerText = "生成完成 ✔";
 }
