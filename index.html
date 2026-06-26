@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -6,35 +5,40 @@
   <title>课程目录自动生成系统</title>
 
   <!-- XLSX库 -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
-    body { font-family: Arial; padding: 30px; }
-    .box { margin-bottom: 20px; }
-    button { padding: 10px 20px; cursor: pointer; }
+    body {
+      font-family: Arial;
+      padding: 30px;
+    }
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
   </style>
 </head>
 
 <body>
 
-  <h2>📘 课程目录自动生成系统</h2>
+<h2>📘 课程目录自动生成系统</h2>
 
-  <div class="box">
-    <h3>① 上传课程目录-1</h3>
-    <input type="file" id="file1" accept=".xlsx" />
-  </div>
+<div>
+  <h3>① 上传课程目录-1</h3>
+  <input type="file" id="file1" />
+</div>
 
-  <div class="box">
-    <h3>② 上传课程目录-2（规则表）</h3>
-    <input type="file" id="file2" accept=".xlsx" />
-  </div>
+<div>
+  <h3>② 上传课程目录-2（规则表）</h3>
+  <input type="file" id="file2" />
+</div>
 
-  <button id="generateBtn">🚀 生成课程目录编码</button>
+<br/>
 
-  <p id="status"></p>
+<button onclick="generate()">🚀 生成课程目录编码</button>
 
-  <!-- 注意：必须用相对路径 -->
-  <script src="./app.js"></script>
+<script src="./app.js"></script>
 
 </body>
 </html>
