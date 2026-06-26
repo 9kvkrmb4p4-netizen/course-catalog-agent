@@ -1,9 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
-  <title>Course Catalog</title>
+  <meta charset="UTF-8" />
+  <title>课程目录系统</title>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #f5f6fa;
+    }
+
+    header {
+      background: #4a90e2;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .card {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .desc {
+      color: #666;
+      margin-top: 5px;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Hello Netlify</h1>
+
+<header>
+  📚 我的课程目录系统
+</header>
+
+<div class="container">
+
+  <input id="search" placeholder="搜索课程..." onkeyup="searchCourse()" />
+
+  <div id="list">
+
+    <div class="card">
+      <div class="title">Python 入门</div>
+      <div class="desc">适合零基础学习编程</div>
+    </div>
+
+    <div class="card">
+      <div class="title">前端开发</div>
+      <div class="desc">HTML + CSS + JavaScript</div>
+    </div>
+
+    <div class="card">
+      <div class="title">AI 基础</div>
+      <div class="desc">了解人工智能基本概念</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function searchCourse() {
+  let input = document.getElementById("search").value.toLowerCase();
+  let cards = document.getElementsByClassName("card");
+
+  for (let card of cards) {
+    let text = card.innerText.toLowerCase();
+    card.style.display = text.includes(input) ? "block" : "none";
+  }
+}
+</script>
+
 </body>
 </html>
