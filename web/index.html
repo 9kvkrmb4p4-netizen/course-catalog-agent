@@ -1,45 +1,35 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <title>课程目录生成系统</title>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <meta charset="UTF-8" />
+  <title>课程目录自动生成系统</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: Arial; padding: 30px; }
+    button { padding: 10px 20px; margin-top: 10px; }
+    .box { margin-bottom: 20px; }
+  </style>
 </head>
 
-<body style="font-family: Arial; padding: 30px;">
+<body>
 
-<h2>📘 课程目录自动生成系统</h2>
+  <h1>📘 课程目录自动生成系统</h1>
 
-<!-- 文件1 -->
-<div>
+  <div class="box">
     <h3>① 上传课程目录-1</h3>
-    <input type="file" id="file1">
-</div>
+    <input type="file" id="file1" accept=".xlsx" />
+  </div>
 
-<br>
-
-<!-- 文件2 -->
-<div>
+  <div class="box">
     <h3>② 上传课程目录-2（规则表）</h3>
-    <input type="file" id="file2">
-</div>
+    <input type="file" id="file2" accept=".xlsx" />
+  </div>
 
-<br>
+  <button onclick="generate()">🚀 生成课程目录编码</button>
 
-<!-- 生成按钮 -->
-<div>
-    <button onclick="generate()" style="padding:10px 20px;font-size:16px;">
-        🚀 生成课程目录编码
-    </button>
-</div>
+  <p id="msg"></p>
 
-<br>
-
-<!-- 输出提示 -->
-<div id="status"></div>
-
-<!-- 引入你的JS -->
-<script src="app.js"></script>
+  <script src="./app.js"></script>
 
 </body>
 </html>
